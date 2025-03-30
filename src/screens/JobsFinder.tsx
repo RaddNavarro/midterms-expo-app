@@ -25,36 +25,50 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchData, setSearchData] = useState([]);
     const [openModal, setOpenModal] = useState(false);
-
+    function currencyFormat(num) {
+        return '₱' + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+     }
+    
     function renderModal(id) {
 
         return (
-            <Modal visible={openModal} animationType='slide' key={id} statusBarTranslucent>
-                <View style={styles.application_container}>
-                    <View style={styles.application_inner_container}>
-                        {jobData.map((item) => {
-                            if (item.id === id) {
-                                return (
-                                    <>
-                                        <Text>{item.title}</Text>
-                                        <Text>{item.id}</Text>
+            <Modal visible={openModal} animationType='slide' transparent={true}>
+                {jobData.map((item) => {
+                    if (item.id === id) {
+                        return (
+                            <>
+                                <View style={styles.application_container} key={id}>
+                                    <View style={styles.application_inner_container}>
+                                        <Image height={80} width={80} source={{ uri: item.companyLogo }} />
+                                        <Text style={styles.application_title}>{item.title}</Text>
+                                        <Text style={styles.application_companyName}>{item.companyName}</Text>
+                                        <Text>Locations: </Text>{item.locations.map((loc) => {
+                                            return (<Text>{loc}</Text>)
+                                        })}
+                                        <Text>{item.jobType}</Text>
+                                        <Text>{item.seniorityLevel}</Text>
+                                        <Text>{item.minSalary && item.maxSalary ? (
+                                            <>
+                                                <Text>{currencyFormat(item.minSalary)} - {currencyFormat(item.maxSalary)}</Text>
 
-                                        <TouchableOpacity>
-                                            <Text>Apply Job</Text>
+                                            </>) : (
+
+                                            <Text>Unknown Salary</Text>
+                                        )}</Text>
+                                        <View style={styles.application_applyBtn}>
+                                            <TouchableOpacity>
+                                                <Text style={styles.applyTxt}>Apply Job</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <TouchableOpacity onPress={() => setOpenModal(false)}>
+                                            <Text style={styles.closeTxt}>Close</Text>
                                         </TouchableOpacity>
-                                    </>
-
-
-                                )
-                            }
-                        })}
-                        <TouchableOpacity onPress={() => setOpenModal(false)}>
-                            <Text>Close</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                </View>
-
+                                    </View>
+                                </View>
+                            </>
+                        )
+                    }
+                })}
             </Modal>
         )
     }
@@ -156,25 +170,23 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
     const item = ({ item }) => {
         return (
             <View key={item.id}>
-                <TouchableOpacity style={styles.job_list} onPress={() => { setOpenModal(true); setPassedID(item.id) }}>
+                <TouchableOpacity style={styles.job_list(isDark)} onPress={() => { setOpenModal(true); setPassedID(item.id) }}>
                     <View style={styles.job_list_inner}>
                         <View style={styles.job_list_inner_img_wrapper}>
                             <Image height={80} width={80} source={{ uri: item.companyLogo }} />
                             <View style={styles.job_list_inner_txt}>
-                                <Text style={styles.job_list_inner_txt_title}>{item.title}</Text>
-                                <Text>{item.companyName}</Text>
-                                <Text style={styles.job_list_inner_txt_info}>{item.seniorityLevel} ● {item.workModel} ● {item.jobType}</Text>
+                                <Text style={styles.job_list_inner_txt_title(isDark)}>{item.title}</Text>
+                                <Text style={styles.job_list_inner_txt_companyName(isDark)}>{item.companyName}</Text>
+                                <Text style={styles.job_list_inner_txt_info(isDark)}>{item.seniorityLevel} ● {item.workModel} ● {item.jobType}</Text>
                             </View>
                         </View>
 
                     </View>
                     <View style={{ marginBottom: 10 }}>
-                        <Text style={styles.job_list_inner_txt_salary}>{item.minSalary && item.maxSalary ? (
+                        <Text style={styles.job_list_inner_txt_salary(isDark)}>{item.minSalary && item.maxSalary ? (
                             <>
-                                <Text>${item.minSalary} - ${item.maxSalary}</Text>
-
+                                <Text>{currencyFormat(item.minSalary)} - {currencyFormat(item.maxSalary)}</Text>
                             </>) : (
-
                             <Text>Unknown Salary</Text>
                         )}</Text>
                     </View>
@@ -248,16 +260,16 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
     }
 
     return (
-        <SafeAreaView style={styles.safeContainer}>
+        <SafeAreaView style={styles.safeContainer(isDark)}>
             <View style={styles.container}>
                 {/* <ScrollView> */}
                 <View style={styles.home_header}>
                     <View>
-                        <Text style={styles.home_header_title}>Job Finder</Text>
+                        <Text style={styles.home_header_title(isDark)}>Job Finder</Text>
                     </View>
                     <View style={styles.home_header_left}>
                         <TouchableOpacity onPress={() => navigation.navigate('SavedJobs')}>
-                            <Ionicons name="newspaper-outline" size={25}></Ionicons>
+                            <Ionicons name="newspaper-outline" size={25} color={isDark === true ? COLOURS.white : COLOURS.backgroundDark}></Ionicons>
                         </TouchableOpacity>
 
                     </View>
@@ -265,7 +277,7 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                 </View>
                 <View style={styles.home_search_bar(isDark)}>
                     <View style={styles.home_search_bar_icon}>
-                        <Ionicons name="search-outline" size={20} color={isDark === true ? 'white' : 'black'} />
+                        <Ionicons name="search-outline" size={20} color={isDark === true ? COLOURS.white : COLOURS.backgroundDark} />
 
 
 
