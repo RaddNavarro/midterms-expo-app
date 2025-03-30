@@ -28,6 +28,9 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
 
     //     // return unsubscribe;
     // }, [navigation])
+    function currencyFormat(num) {
+        return '₱' + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+     }
     useEffect(() => {
           fetchData() 
           getSavedData();
@@ -41,7 +44,6 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
             let saved = await AsyncStorage.getItem('saved');
             saved = JSON.parse(saved)
             let savedData = [];
-    
             if (saved) {
                 jobData.forEach(data => {
                     if (saved.includes(data.id)) {
@@ -60,7 +62,6 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
          finally {
             setIsLoading(false);
         }
-       
     }
 
     const fetchData = async () => {
@@ -79,6 +80,9 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
                 // } )
                 setJobData(JSON.parse(data))
                 
+
+
+                
             }
             // getSavedData();
 
@@ -89,21 +93,6 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
         }
     }
 
-    function renderModal() {
-        return (
-            <Modal visible={openModal} animationType="slide" transparent={true}>
-                <View style={styles.application_container}>
-                    <View style={styles.application_inner_container}>
-                        <Text>Insert Forms</Text>
-                        <TouchableOpacity onPress={() => setOpenModal(false)}>
-                            <Text>Close</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                </View>
-            </Modal>
-        )
-    }
 
     const handleRefresh = () => {
         setRefreshing(true)
@@ -128,23 +117,22 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
     const renderSavedJobs = ({ item }) => {
         return (
             <View key={item.id}>
-                <TouchableOpacity style={styles.job_list}>
-                    <View style={styles.job_list_inner}>
-                        <View style={styles.job_list_inner_img_wrapper}>
+                <TouchableOpacity style={styles.saved_job_list}>
+                    <View style={styles.saved_job_list_inner}>
+                        <View style={styles.saved_job_list_inner_img_wrapper}>
                             <Image height={80} width={80} source={{ uri: item.companyLogo }} />
-                            <View style={styles.job_list_inner_txt}>
-                                <Text style={styles.job_list_inner_txt_title}>{item.title}</Text>
+                            <View style={styles.saved_job_list_inner_txt}>
+                                <Text style={styles.saved_job_list_inner_txt_title}>{item.title}</Text>
                                 <Text>{item.companyName}</Text>
-                                <Text style={styles.job_list_inner_txt_info}>{item.seniorityLevel} ● {item.workModel} ● {item.jobType}</Text>
+                                <Text style={styles.saved_job_list_inner_txt_info}>{item.seniorityLevel} ● {item.workModel} ● {item.jobType}</Text>
                             </View>
                         </View>
 
                     </View>
                     <View style={{ marginBottom: 10 }}>
-                        <Text style={styles.job_list_inner_txt_salary}>{item.minSalary && item.maxSalary ? (
+                    <Text style={styles.saved_job_list_inner_txt_salary}>{item.minSalary && item.maxSalary ? (
                             <>
-                                <Text>${item.minSalary} - ${item.maxSalary}</Text>
-
+                                <Text>{currencyFormat(item.minSalary)} - {currencyFormat(item.maxSalary)}</Text>
                             </>) : (
                             <Text>Unknown Salary</Text>
                         )}</Text>
@@ -168,13 +156,10 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.savedJobs_container}>
                 <View style={styles.savedJobs}>
-                    <Text style={styles.home_header_title}>Saved Jobs</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('JobsFinder')}>
+                    <Text style={styles.saved_header_title}>Saved Jobs</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('JobsFinder')} style={{ marginLeft: 10 }}>
                         <Ionicons name="home-outline" size={25}></Ionicons>
                     </TouchableOpacity>
-
-                    {renderModal()}
-
                 </View>
                 <View>
                     {/* {savedJobs ? savedJobs.map(renderSavedJobs) : <Text>No jobs saved</Text>} */}
