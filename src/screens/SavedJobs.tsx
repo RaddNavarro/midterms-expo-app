@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, TouchableOpacity, ScrollView, Button, Modal, SafeAreaView, ActivityIndicator, Image, FlatList } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, Button, Modal, SafeAreaView, ActivityIndicator, Image, FlatList, ToastAndroid } from "react-native";
 import { Props } from "../navigation/props";
 import styles from "../styles/styles";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -13,42 +13,45 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
 
     const [openModal, setOpenModal] = useState(false);
     const [savedJobs, setSavedJobs] = useState();
-    const [savedID, setSavedID] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [jobData, setJobData] = useState([]);
-    const isFocused = useIsFocused();
     const [refreshing, setRefreshing] = useState(false)
+    const [passedID, setPassedID] = useState('')
+    const [savedID, setSavedID] = useState([])
 
-    // useEffect(() => {
+    const url = "https://empllo.com/api/v1";
+    let ids = 1
 
-    //     // const unsubscribe = navigation.addListener('focus', () => {
-    //     //     fetchData();
-    //     //     getSavedData();
-    //     // });
-
-    //     // return unsubscribe;
-    // }, [navigation])
     function currencyFormat(num) {
         return '₱' + num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
-     }
-    useEffect(() => {
-          fetchData() 
-          getSavedData();
-      }, []);
+    }
+    // useEffect(() => {
+    //     fetchData()
+    //     getSavedData();
+    // }, []);
 
-    
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (jobData) {
+            getSavedData();
+        }
+    }, [jobData]);
+
+
     const getSavedData = async () => {
-       
+
         setIsLoading(true);
         try {
             let saved = await AsyncStorage.getItem('saved');
             saved = JSON.parse(saved)
             let savedData = [];
-            if (saved) {
+            if (saved && jobData) {
                 jobData.forEach(data => {
                     if (saved.includes(data.id)) {
                         savedData.push(data)
-                        console.log(saved)
                         return;
                     }
                 })
@@ -59,38 +62,34 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
         } catch (error) {
             console.error(error);
         }
-         finally {
+        finally {
+            console.log(savedJobs)
             setIsLoading(false);
         }
     }
-
     const fetchData = async () => {
         setIsLoading(true);
-        
+
         try {
-           
-            const data: any = await AsyncStorage.getItem('jobs')
-            // let saved = await AsyncStorage.getItem('saved');
-            // saved = JSON.parse(saved)
-            // const jobs = JSON.parse(data)
+
+            const res = await axios.get(url);
+
+            const data = res.data.jobs;
+
             if (data) {
-                
-                // jobs.map((job) => {
-                //     console.log(job.id, job.title)
-                // } )
-                setJobData(JSON.parse(data))
-                
 
+                let filteredData = data.filter((job: any, idx: any) => idx === data.findIndex(elem => elem.title === job.title))
+                let newData = filteredData.map((data: any, idx: any) => ({ ...data, id: ids++ }))
+                setJobData(newData);
 
-                
             }
-            // getSavedData();
 
         } catch (error: any) {
             console.log(error)
         } finally {
             setIsLoading(false);
         }
+
     }
 
 
@@ -104,7 +103,7 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
 
 
     if (isLoading) {
-        
+
         return (
             <SafeAreaView style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={COLOURS.black} />
@@ -113,11 +112,54 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
         )
     }
 
+    const removeSavedJob = async (id) => {
+
+        console.log(id)
+        try {
+            let saved = await AsyncStorage.getItem('saved');
+            saved = JSON.parse(saved)
+            let savedData = [];
+            let newSaved = [];
+            if (saved && jobData) {
+                jobData.forEach(data => {
+                    if (saved.includes(data.id)) {
+                        savedData.push(data.id)
+                        return;
+                    }
+                })
+            }
+
+            let updateData = savedData.filter((save) => save !== id)
+            let updateData2 = savedData.filter((save) => save !== id)
+            let newData = []
+            if (updateData2 && jobData) {
+                jobData.forEach(data => {
+                    if (updateData2.includes(data.id)) {
+                        newSaved.push(data)
+                        // newData.push(data)
+                        return;
+                    }
+                })
+            }
+            console.log(newSaved, "bruh")
+            setSavedJobs(newSaved)
+            await AsyncStorage.setItem('saved', JSON.stringify(updateData))
+            ToastAndroid.show(
+                "Removed Saved Job", ToastAndroid.SHORT
+            );
+            console.log(updateData)
+        } catch (error) {
+            console.error(error);
+        }
+        // finally {
+        //     handleRefresh()
+        // }
+    }
 
     const renderSavedJobs = ({ item }) => {
         return (
             <View key={item.id}>
-                <TouchableOpacity style={styles.saved_job_list}>
+                <View style={styles.saved_job_list}>
                     <View style={styles.saved_job_list_inner}>
                         <View style={styles.saved_job_list_inner_img_wrapper}>
                             <Image height={80} width={80} source={{ uri: item.companyLogo }} />
@@ -130,7 +172,7 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
 
                     </View>
                     <View style={{ marginBottom: 10 }}>
-                    <Text style={styles.saved_job_list_inner_txt_salary}>{item.minSalary && item.maxSalary ? (
+                        <Text style={styles.saved_job_list_inner_txt_salary}>{item.minSalary && item.maxSalary ? (
                             <>
                                 <Text>{currencyFormat(item.minSalary)} - {currencyFormat(item.maxSalary)}</Text>
                             </>) : (
@@ -141,43 +183,115 @@ const SavedJobs: React.FC<Props> = ({ navigation }) => {
                         {/* <TouchableOpacity>
                                             <Ionicons name="bookmark-outline" size={24} color={COLOURS.black} />
                                         </TouchableOpacity> */}
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => { setOpenModal(true); setPassedID(item.id) }}>
                             <Text style={{ fontWeight: '800', backgroundColor: COLOURS.blue, color: COLOURS.white, width: '100%', paddingHorizontal: 50, paddingVertical: 10, borderRadius: 10, letterSpacing: 2 }}>Apply for Job</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity onPress={() => removeSavedJob(item.id)}>
+                            <Text style={{ fontWeight: '800', backgroundColor: COLOURS.red, color: COLOURS.white, width: '100%', paddingHorizontal: 50, paddingVertical: 10, borderRadius: 10, letterSpacing: 2, margin: 10 }}>Remove from Saved Jobs</Text>
+                        </TouchableOpacity>
                     </View>
-                </TouchableOpacity>
+                </View>
 
             </View>
+
+
 
         )
     }
 
+
+    const handleSubmit = async (id) => {
+
+        console.log(id)
+        try {
+            let saved = await AsyncStorage.getItem('saved');
+            saved = JSON.parse(saved)
+            let savedData = [];
+            console.log(saved)
+            if (saved && jobData) {
+                jobData.forEach(data => {
+                    if (saved.includes(data.id)) {
+                        savedData.push(data.id)
+                        return;
+                    }
+                })
+            }
+            setOpenModal(false)
+            let updateData = savedData.filter((save) => save !== id)
+            await AsyncStorage.setItem('saved', JSON.stringify(updateData))
+            ToastAndroid.show(
+                "Application Sent", ToastAndroid.SHORT
+            );
+            navigation.navigate('JobsFinder')
+            console.log(updateData)
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function renderModal(id) {
+        return (
+            <View>
+                {jobData.map((item) => {
+                    if (item.id === id) {
+                        return (
+                            <>
+                                <Modal visible={openModal} animationType='fade' transparent={true} key={item.id}>
+                                    <View style={styles.application_container} key={item.id}>
+                                        <View style={styles.application_inner_container}>
+                                            <Text>Applicaiton Form</Text>
+                                            <View style={styles.application_applyBtn}>
+                                                <TouchableOpacity onPress={() => handleSubmit(item.id)}>
+                                                    <Text style={styles.applyTxt}>Apply Job</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                            <TouchableOpacity onPress={() => setOpenModal(false)}>
+                                                <Text style={styles.closeTxt}>Close</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </Modal>
+                            </>
+                        )
+                    }
+                })}
+                {/* </Modal> */}
+            </View>
+        )
+    }
+
+
     return (
 
-        <View style={styles.savedJobs_container}>
-                <View style={styles.savedJobs}>
-                    <Text style={styles.saved_header_title}>Saved Jobs</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('JobsFinder')} style={{ marginLeft: 10 }}>
-                        <Ionicons name="home-outline" size={25}></Ionicons>
-                    </TouchableOpacity>
-                </View>
-                <View>
-                    {/* {savedJobs ? savedJobs.map(renderSavedJobs) : <Text>No jobs saved</Text>} */}
-                    <FlatList
-                        data={savedJobs}
-                        renderItem={(item) => renderSavedJobs(item)}
-                        keyExtractor={(renderSavedJobs, index) => index.toString()}
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                    />
-                </View>
-                {/* {savedJobs ? savedJobs.map((data) => {
-                    return <Text>{data.id}   {data.title}</Text>
-                }) : <Text>No saved jobs</Text>} */}
-
-        </View>
-
-
+        <SafeAreaView style={styles.savedJobs_container}>
+            <View style={styles.savedJobs}>
+                <Text style={styles.saved_header_title}>Saved Jobs</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('JobsFinder')} style={{ marginLeft: 10 }}>
+                    <Ionicons name="home-outline" size={25}></Ionicons>
+                </TouchableOpacity>
+            </View>
+            <View>
+                {/* {savedJobs.length > 0 ? (<FlatList
+                    data={savedJobs}
+                    renderItem={renderSavedJobs}
+                    keyExtractor={(renderSavedJobs, index) => index.toString()}
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                /> ): 
+                (
+                    <Text>No saved jobs yet</Text>
+                )  } */}
+                <FlatList
+                    data={savedJobs}
+                    renderItem={renderSavedJobs}
+                    keyExtractor={(renderSavedJobs, index) => index.toString()}
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                />
+                
+            </View>
+            {renderModal(passedID)}
+        </SafeAreaView>
     )
 }
 

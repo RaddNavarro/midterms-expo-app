@@ -17,6 +17,7 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
     const [savedData, setSavedData] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     let ids = 1
+    let saves = []
     const url = "https://empllo.com/api/v1";
     const [isDark, setIsDark] = useState(false);
     const [passedID, setPassedID] = useState('')
@@ -37,11 +38,11 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                     if (item.id === id) {
                         return (
                             <>
-                                <View style={styles.application_container} key={id}>
-                                    <View style={styles.application_inner_container}>
+                                <View style={styles.info_container} key={item.id}>
+                                    <View style={styles.info_inner_container}>
                                         <Image height={80} width={80} source={{ uri: item.companyLogo }} />
-                                        <Text style={styles.application_title}>{item.title}</Text>
-                                        <Text style={styles.application_companyName}>{item.companyName}</Text>
+                                        <Text style={styles.info_title}>{item.title}</Text>
+                                        <Text style={styles.info_companyName}>{item.companyName}</Text>
                                         <Text>Locations: </Text>{item.locations.map((loc) => {
                                             return (<Text>{loc}</Text>)
                                         })}
@@ -55,13 +56,13 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
 
                                             <Text>Unknown Salary</Text>
                                         )}</Text>
-                                        <View style={styles.application_applyBtn}>
+                                        {/* <View style={styles.info_applyBtn}>
                                             <TouchableOpacity>
-                                                <Text style={styles.applyTxt}>Apply Job</Text>
+                                                <Text style={styles.info_applyTxt}>Save Job</Text>
                                             </TouchableOpacity>
-                                        </View>
+                                        </View> */}
                                         <TouchableOpacity onPress={() => setOpenModal(false)}>
-                                            <Text style={styles.closeTxt}>Close</Text>
+                                            <Text style={styles.info_closeTxt}>Close</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -74,11 +75,9 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
     }
 
     const addSavedJobs = async (id) => {
-
         let jobArray = await AsyncStorage.getItem('saved');
         jobArray = JSON.parse(jobArray)
-
-        if (savedData.includes(id)) {
+        if (savedData?.includes(id)) {
             ToastAndroid.show(
                 "Job Already Saved", ToastAndroid.SHORT
             );
@@ -96,10 +95,12 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                 );
 
                 setOpenModal(false);
+                setSavedData([...savedData, id])
+                
             } catch (error) {
                 console.error(error);
                 return;
-            }
+            } 
 
         } else {
             let array = []
@@ -112,11 +113,13 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                 );
 
                 setOpenModal(false);
+                setSavedData([...savedData, id])
             } catch (error) {
                 console.error(error);
                 return;
             }
         }
+        // handleRefresh()
     }
 
 
@@ -142,7 +145,7 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
             const data: any = await AsyncStorage.getItem('jobs');
             const saved = await AsyncStorage.getItem('saved');
             const jobs = JSON.parse(data)
-            const saves = JSON.parse(saved);
+            saves = JSON.parse(saved);
             jobs.map((job) => {
                 console.log(job.id, job.title)
             })
@@ -157,6 +160,12 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
         fetchData()
 
     }, [])
+
+    // useEffect(() => {
+    //     fetchData()
+    // }, [saves])
+
+
 
     if (isLoading) {
         return (
@@ -191,8 +200,8 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                         )}</Text>
                     </View>
                     <View style={{ alignItems: 'center', left: 10 }}>
-                        <TouchableOpacity onPress={() => addSavedJobs(item.id)} disabled={savedData.includes(item.id) ? true : false}>
-                            {savedData.includes(item.id) ? (<Text style={{
+                        <TouchableOpacity onPress={() => addSavedJobs(item.id)} disabled={savedData?.includes(item.id) ? true : false}>
+                            {savedData?.includes(item.id) ? (<Text style={{
                                 fontWeight: '800',
                                 backgroundColor: COLOURS.backgroundMedium,
                                 color: COLOURS.white,
@@ -259,6 +268,7 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
         setIsDark(value);
     }
 
+
     return (
         <SafeAreaView style={styles.safeContainer(isDark)}>
             <View style={styles.container}>
@@ -299,6 +309,7 @@ const JobsFinder: React.FC<Props> = ({ navigation }) => {
                     />
                 </View>
                 {renderModal(passedID)}
+                
             </View >
         </SafeAreaView>
     )
