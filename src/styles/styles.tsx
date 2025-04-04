@@ -44,11 +44,10 @@ const styles = StyleSheet.create({
         // paddingLeft: 15
     },
     home_search_bar:(isDark)=> ({
-        marginHorizontal: 30,
         backgroundColor: isDark === true ? COLOURS.backgroundDark : 'white',
         flexDirection: 'row',
-        alignItems: 'center',
-        width: '80%',
+        // alignItems: 'center',
+        width: '90%',
         borderRadius: 20,
         padding: 5,
         paddingHorizontal: 10,
@@ -165,17 +164,17 @@ const styles = StyleSheet.create({
     },
 
 
-    // APPLICATION FORM
-    application_container: {
+    // INFO MODAL
+    info_container: {
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center', 
         backgroundColor: 'rgba(0,0,0, .6)'
     },
-    application_inner_container: {
+    info_inner_container: {
         // backgroundColor: 'white', 
         // padding: 15, 
-        // width: '90%', 
+        width: '90%', 
         // height: 150, 
         // borderRadius: 10,
         flex: 1,
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
 
     },
-    application_title: {
+    info_title: {
         marginBottom: 20,
         color: 'dodgerblue',
         fontWeight: 'bold',
@@ -196,12 +195,12 @@ const styles = StyleSheet.create({
 
         
     },
-    application_applyBtn: {
+    info_applyBtn: {
         flexDirection: 'row',
         marginVertical: 30,
         alignItems: 'center'
     },
-    applyTxt: {
+    info_applyTxt: {
         fontWeight: '800',
         backgroundColor: COLOURS.blue,
         color: COLOURS.white,
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         letterSpacing: 2
     },
-    closeTxt: {
+    info_closeTxt: {
         fontWeight: '800',
         backgroundColor: COLOURS.red,
         color: COLOURS.white,
@@ -221,7 +220,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         letterSpacing: 2
     },
-    application_companyName: {
+    info_companyName: {
         fontSize: 18,
         fontWeight: '400'
     },
@@ -238,7 +237,27 @@ const styles = StyleSheet.create({
     },
 
 
-    // DETAILS MODAL
+    // APPLICATION FORM
+    application_container: {
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: 'rgba(0,0,0, .6)'
+    },
+    application_inner_container: {
+        // backgroundColor: 'white', 
+        padding: 15, 
+        width: '90%', 
+        marginVertical: 150,
+        // height: 150, 
+        // borderRadius: 10,
+        flex: 1,
+        backgroundColor: 'white',
+        borderRadius: 20,
+        height: '90%',
+        alignItems: 'center',
+
+    },
     
 })
 
